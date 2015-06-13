@@ -10,12 +10,33 @@ read key
 
 echo "File path: "
 
-read $dir
+read dir
 
-if [ ! -d $dir ]; then
-    echo "Creating file!"
-    mkdir $dir
-fi
+[ ! -d "$dir"  ] && mkdir -p "$dir" && echo "Making Folder!"
 
-curl -o $dir "http://www.freesound.org/apiv2/search/text/?query=$input&token=$key"
+cd "./$dir"
 
+str=$(curl -s  http://www.freesound.org/apiv2/search/text/?query=$input&token=$key)
+
+n=($(echo $str | grep -o '"id": [^"]* ' | cut -d '"' -f4))
+
+curl -H "Authorization: Bearer {{$key}}"
+'https://www.freesound.org/apiv2/sounds/$n/download/'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+^G Get Help     ^O Write Out    ^W Where Is     ^K Cut Text     ^J Justify      ^C Cur Pos
+^X Exit         ^R Read File    ^\ Replace      ^U Uncut Text   ^T To Spell     ^_ Go To Line
