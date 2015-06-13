@@ -10,11 +10,12 @@ read key
 
 echo "File path: "
 
-read $file
+read $dir
 
-if [ ! -f $file ]; then
-    echo "File not found!"
+if [ ! -d $dir ]; then
+    echo "Creating file!"
+    mkdir $dir
 fi
 
-curl "http://www.freesound.org/apiv2/search/text/?query=$input&token=$key"
+curl -o $dir "http://www.freesound.org/apiv2/search/text/?query=$input&token=$key"
 
