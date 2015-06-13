@@ -1,2 +1,20 @@
 #!/bin/bash
 
+echo "Input query for download: "
+
+read input
+
+echo "Input API Key: "
+
+read key
+
+echo "File path: "
+
+read $file
+
+if [ ! -f $file ]; then
+    echo "File not found!"
+fi
+
+curl "http://www.freesound.org/apiv2/search/text/?query=$input&token=$key"
+
