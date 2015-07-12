@@ -42,11 +42,17 @@ def exists(idList, testId):
    return False
  
 def createARFF():
-	f = open("{0}.json".format(i), 'w')
-	for f in id_result:
-		#f.write()
-		
-   
+	f = open("HumanDistress.arff".format(i), 'w')
+	f.write("@RELATION sounds\n @ATTRIBUTE class\t {Human-In-Distress, Other}\n @DATA\n")
+	for jF in id_result:
+		if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
+			#write to file under Human-In-Distress
+			f.write("stuff")
+		else:
+			#write to file under Other
+			f.write("stuff")
+
+
 #Gets .json file of all sounds with same tags
 json_result = list()
 for i in range(int(num)):
@@ -61,7 +67,7 @@ blackListId = list()
 id_result = list()
 for i in allId:
 	if exists(blackListId, i) == False:
-		url = 'https://www.freesound.org/apiv2/sounds/{0}/analysis/?token={1}'.format(i, key)
+		url = 'https://www.freesound.org/apiv2/sounds/{0}'.format(i)
 		id_result.append((json.loads(curl(url), encoding='iso-8859-1')))
 	blackListId.append(i)
 
