@@ -68,6 +68,3 @@ for i in allId:
 print(id_result)
 #Creates .ARFF file
 createARFF()
-
-#
-#
