@@ -40,7 +40,11 @@ def exists(idList, testId):
        if i == testId:
            return True
    return False
-    
+ 
+def createARFF():
+	for f in id_result:
+		
+   
 #Gets .json file of all sounds with same tags
 json_result = list()
 for i in range(int(num)):
@@ -52,15 +56,16 @@ allId = getId()
 
 #Gets all .json files from ids
 blackListId = list()
-id_result = ''
+id_result = list()
 for i in allId:
 	if exists(blackListId, i) == False:
-		print(i)
 		url = 'https://www.freesound.org/apiv2/sounds/{0}/analysis/?token={1}'.format(i, key)
-		id_result += (json.loads(curl(url), encoding='iso-8859-1'))
+		id_result.append((json.loads(curl(url), encoding='iso-8859-1')))
 	blackListId.append(i)
 
 print(id_result)
 #Creates .ARFF file
+createARFF()
+
 #f = open("{0}.json".format(i), 'w')
 #f.write(idInfo.decode('iso-8859-1'))
