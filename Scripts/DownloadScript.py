@@ -42,7 +42,9 @@ def exists(idList, testId):
    return False
  
 def createARFF():
+	f = open("{0}.json".format(i), 'w')
 	for f in id_result:
+		#f.write()
 		
    
 #Gets .json file of all sounds with same tags
@@ -67,5 +69,5 @@ print(id_result)
 #Creates .ARFF file
 createARFF()
 
-#f = open("{0}.json".format(i), 'w')
-#f.write(idInfo.decode('iso-8859-1'))
+#
+#
