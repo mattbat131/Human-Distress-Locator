@@ -1,9 +1,8 @@
 import datetime
 from io import BytesIO
 import json
-import os
 import pycurl
-import subprocess
+
 
 API_KEY_FILE = "ApiKey.txt"
 OUTPUT_FILE = "HumanDistress.arff"
@@ -20,10 +19,10 @@ LOW_LEVEL_WITH_FULL_STATS = ["spectral_complexity", "silence_rate_20dB", "spectr
                              "spectral_flatness_db", "zerocrossingrate", "spectral_skewness", "hfc", "spectral_crest"]
 LOW_LEVEL = ["average_loudness"]
 
-SFX = ["pitch_min_to_total", "tc_to_total", "pitch_max_to_total", "max_to_total", "duration", "pitch_after_max_to_before_max_energy_ratio"]
+SFX = ["pitch_min_to_total", "tc_to_total", "pitch_max_to_total", "max_to_total", "duration", "pitch_after_max_to_before_max_energy_ratio", "strongdecay"]
 SFX_WITH_SIMPLE_STATS = ["temporal_decrease", "der_av_after_max", "temporal_spread", "temporal_kurtosis", "logattacktime", "temporal_centroid",
                             "flatness", "max_der_before_max", "pitch_centroid", "temporal_skewness", "effective_duration", ]
-SFX_WITH_FULL_STATS = ["inharmonicity", "strongdecay", "oddtoevenharmonicenergyratio"]
+SFX_WITH_FULL_STATS = ["inharmonicity", "oddtoevenharmonicenergyratio"]
 # potentially add: scvalleys
 
 
@@ -44,11 +43,6 @@ def getUserInput():
         key = input('Enter Key: ')
     userInput["key"] = key
     return userInput
-
-def runCommand():
-    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    print(command)	
 
 def curl(url):
     buffer = BytesIO()
@@ -78,49 +72,70 @@ def getAllJsonResultsFromIds(ids, key):
         dedupe_list.append(i)
     return (id_result)
 
-def createOneAttributeLine(name):
-    return "@ATTRIBUTE " + name + " NUMERIC\n"
+def createOneAttributeLine(attribute):
+    return "@ATTRIBUTE " + '_'.join(attribute) + " NUMERIC\n"
 
-def expandStats(name, stats, prefix=""):
-    full_attribute_names = [prefix + name + "_" + stat for stat in stats]
-    return full_attribute_names
+def expandStats(category, name, stats):
+    attributes = [[category, name, stat] for stat in stats]
+    return attributes
 
 def getAllAttributes():
     allAttributes = list()
-    allAttributes.extend(FILE_ATTRIBUTES)
-    allAttributes.extend(["low_level_" + name for name in LOW_LEVEL])
-    allAttributes.extend([expandStats(name, FULL_STATS, "low_level_") for name in LOW_LEVEL_WITH_FULL_STATS])
-    allAttributes.extend(["sfx_" + name for name in SFX])
-    allAttributes.extend([expandStats(name, SIMPLE_STATS, "sfx_") for name in SFX_WITH_SIMPLE_STATS])
-    allAttributes.extend([expandStats(name, FULL_STATS, "sfx_") for name in SFX_WITH_FULL_STATS])
+    #allAttributes.extend([[attrib] for attrib in FILE_ATTRIBUTES]) File attributes are in a different json object TODO
+    allAttributes.extend([["lowlevel", name] for name in LOW_LEVEL])
+    for name in LOW_LEVEL_WITH_FULL_STATS:
+        allAttributes.extend(expandStats("lowlevel", name, FULL_STATS))
+    allAttributes.extend([["sfx", name] for name in SFX])
+    for name in SFX_WITH_SIMPLE_STATS:
+        allAttributes.extend(expandStats("sfx", name, SIMPLE_STATS))
+    for name in SFX_WITH_FULL_STATS:
+        allAttributes.extend(expandStats("sfx", name, FULL_STATS))
     return allAttributes
  
-def writeHeader(filename):
-    f = open(filename, 'w')
-    f.write("% " + str(datetime.datetime.now()) + "\n")
-    f.write("@RELATION sounds\n\n")
-    allAttributes = getAllAttributes()
-    for i in range(len(allAttributes)):
-        for attrib in allAttributes[i]:
-            print(attrib)
-            f.writelines(createOneAttributeLine(attrib))
-    f.write("@ATTRIBUTE class {Human-In-Distress, Other}\n\n")
-    f.write("@DATA\n")
+def writeHeader(file, allAttributes):
+    file.write("% " + str(datetime.datetime.now()) + "\n")
+    file.write("@RELATION sounds\n\n")
+    for attrib in allAttributes:
+        file.write(createOneAttributeLine(attrib))
+    file.write("@ATTRIBUTE bitrate NUMERIC\n")
+    file.write("@ATTRIBUTE bitdepth NUMERIC\n")
+    file.write("@ATTRIBUTE duration NUMERIC\n")
+    file.write("@ATTRIBUTE class {Human-In-Distress, Other}\n\n")
+    file.write("@DATA\n")
 
-def createArff(filename, jsonFiles):
-    writeHeader(filename)
-    f = open(filename, 'aw')
+def findAttributeValue(jsonObject, attribute):
+    for tag in attribute[0:-1]:
+        if tag in jsonObject:
+            jsonObject = jsonObject[tag]
+    value = "?"
+    if (attribute[-1] in jsonObject):
+        potential_value = str(jsonObject[attribute[-1]])
+        if not 'unk' in potential_value:
+            value = potential_value
+    return value
+
+def createOneDataLine(jsonFile, attributes):
+    values = list()
+    for attribute in attributes:
+        values.append(findAttributeValue(jsonFile, attribute))
+    line = ",".join(values)
+    return line
+
+def createArff(file, jsonFiles, attributes, key):
     for jF in jsonFiles:
-      f.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
-      analysis = json.loads(curl(jF['analysis_stats']), encoding='iso-8859-1')
-      #f.write("{0},{1}".format())
-      if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
-     		#write to file under Human-In-Distress
-     		f.write("Human-In-Distress\n")
-      else:
-     		#write to file under Other
-     		f.write("Other\n")
-      #f.write("% {0}: {1} {2} %".format(jF["id"], jF["name"], jF["tags"].join(, )))
+        url = jF['analysis_stats'] + "?token=" + key
+        analysis = json.loads(curl(url), encoding='iso-8859-1')
+        print(analysis)
+        file.write(createOneDataLine(analysis, attributes) + ",")
+        file.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
+        if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
+            #write to file under Human-In-Distress
+            file.write("Human-In-Distress\n")
+        else:
+            #write to file under Other
+            file.write("Other\n")
+        #f.write("% {0}: {1} {2} %".format(jF["id"], jF["name"], jF["tags"].join(, )))
+
 
 #Gets .json file of all sounds with same tags
 def main():
@@ -132,9 +147,15 @@ def main():
         allIds.append(getIdsFromTagResult(json_result))
     allJsonForIds = list()
     for id in allIds:
-        allJsonForIds = getAllJsonResultsFromIds(id, userInput['key']) 
+        allJsonForIds = getAllJsonResultsFromIds(id, userInput['key'])
 
-    createArff(OUTPUT_FILE,  allJsonForIds)
+    f = open(OUTPUT_FILE, 'w')
+
+    allAttributes = getAllAttributes()
+    writeHeader(f, allAttributes)
+    createArff(f,  allJsonForIds, allAttributes, userInput["key"])
+    f.close()
+
 
 if __name__ == "__main__":
     main()
