@@ -87,12 +87,12 @@ def expandStats(name, stats, prefix=""):
 
 def getAllAttributes():
     allAttributes = list()
-    allAttributes += FILE_ATTRIBUTES
-    allAttributes += ["low_level_" + name for name in LOW_LEVEL]
-    allAttributes += [expandStats(name, FULL_STATS, "low_level_") for name in LOW_LEVEL_WITH_FULL_STATS]
-    allAttributes += ["sfx_" + name for name in SFX]
-    allAttributes += [expandStats(name, SIMPLE_STATS, "sfx_") for name in SFX_WITH_SIMPLE_STATS]
-    allAttributes += [expandStats(name, FULL_STATS, "sfx_") for name in SFX_WITH_FULL_STATS]
+    allAttributes.append(FILE_ATTRIBUTES)
+    allAttributes.append(["low_level_" + name for name in LOW_LEVEL])
+    allAttributes.append([expandStats(name, FULL_STATS, "low_level_") for name in LOW_LEVEL_WITH_FULL_STATS])
+    allAttributes.append(["sfx_" + name for name in SFX])
+    allAttributes.append([expandStats(name, SIMPLE_STATS, "sfx_") for name in SFX_WITH_SIMPLE_STATS])
+    allAttributes.append([expandStats(name, FULL_STATS, "sfx_") for name in SFX_WITH_FULL_STATS])
     return allAttributes
  
 def writeHeader(filename):
@@ -100,7 +100,8 @@ def writeHeader(filename):
     f.write("% " + str(datetime.datetime.now()) + "\n")
     f.write("@RELATION sounds\n\n")
     allAttributes = getAllAttributes()
-    f.write([createOneAttributeLine(attrib) for attrib in allAttributes])
+    #for attrib in allAttributes:
+    	#f.write(createOneAttributeLine(attrib) + "\n")
     f.write("@ATTRIBUTE class {Human-In-Distress, Other}\n\n")
     f.write("@DATA\n")
 
