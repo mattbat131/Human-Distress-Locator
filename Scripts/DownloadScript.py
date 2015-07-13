@@ -125,16 +125,16 @@ def createArff(file, jsonFiles, attributes, key):
     for jF in jsonFiles:
         url = jF['analysis_stats'] + "?token=" + key
         analysis = json.loads(curl(url), encoding='iso-8859-1')
-        print(analysis)
+        #print(analysis)
         file.write(createOneDataLine(analysis, attributes) + ",")
         file.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
         if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
             #write to file under Human-In-Distress
-            file.write("Human-In-Distress\n")
+            file.write("Human-In-Distress")
         else:
             #write to file under Other
-            file.write("Other\n")
-        #f.write("% {0}: {1} {2} %".format(jF["id"], jF["name"], jF["tags"].join(, )))
+            file.write("Other")
+        file.write("% {0}: {1} {2} \n".format(jF["id"], jF["name"], jF["tags"]))
 
 
 #Gets .json file of all sounds with same tags
@@ -147,7 +147,7 @@ def main():
         allIds.append(getIdsFromTagResult(json_result))
     allJsonForIds = list()
     for id in allIds:
-        allJsonForIds = getAllJsonResultsFromIds(id, userInput['key'])
+        allJsonForIds.extend(getAllJsonResultsFromIds(id, userInput['key']))
 
     f = open(OUTPUT_FILE, 'w')
 
