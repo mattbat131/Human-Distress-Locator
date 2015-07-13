@@ -8,7 +8,7 @@ import subprocess
 API_KEY_FILE = "ApiKey.txt"
 OUTPUT_FILE = "HumanDistress.arff"
 SEARCH_FOR_TAG_URL = 'http://www.freesound.org/apiv2/search/text/?query={0}&token={1}'
-URL_FOR_ONE_ID = 'https://www.freesound.org/apiv2/sounds/{0}'
+URL_FOR_ONE_ID = 'http://www.freesound.org/apiv2/sounds/{0}/?token={1}'
 FILE_ATTRIBUTES = ["bitrate", "bitdepth", "duration"]
 SIMPLE_STATS = ["min", "max", "mean"]
 FULL_STATS = ["min", "max", "dvar2", "dmean2", "dmean", "var", "dvar", "mean"]
@@ -64,18 +64,16 @@ def getIdsFromTagResult(tagResult):
     return [result['id'] for result in tagResult['results']]
 
 def getJsonFromUrl(url):
-    print(url)
     curl_result = curl(url)
-    print("Curl result: " + curl_result)
     json_result = json.loads(curl_result, encoding='iso-8859-1')
     return json_result
 
-def getAllJsonResultsFromIds(ids):
+def getAllJsonResultsFromIds(ids, key):
     dedupe_list = list()
     id_result = list()
     for i in ids:
         if not i in dedupe_list:
-            url = URL_FOR_ONE_ID.format(i)
+            url = URL_FOR_ONE_ID.format(i, key)
             id_result.append(getJsonFromUrl(url))
         dedupe_list.append(i)
     return (id_result)
@@ -98,8 +96,8 @@ def getAllAttributes():
     return allAttributes
  
 def writeHeader(filename):
-    f = open(filename.format(i), 'w')
-    f.write("% " + str(datetime.datetime.now()))
+    f = open(filename, 'w')
+    f.write("% " + str(datetime.datetime.now()) + "\n")
     f.write("@RELATION sounds\n\n")
     allAttributes = getAllAttributes()
     f.write([createOneAttributeLine(attrib) for attrib in allAttributes])
@@ -131,7 +129,7 @@ def main():
         json_result = getJsonFromUrl(url)
         allIds.append(getIdsFromTagResult(json_result))
 
-    allJsonForIds = [getAllJsonResultsFromIds(id) for id in allIds]
+    allJsonForIds = [getAllJsonResultsFromIds(id, userInput['key']) for id in allIds]
 
     createArff(OUTPUT_FILE)
 
