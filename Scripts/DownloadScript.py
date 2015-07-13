@@ -87,12 +87,12 @@ def expandStats(name, stats, prefix=""):
 
 def getAllAttributes():
     allAttributes = list()
-    allAttributes.append(FILE_ATTRIBUTES)
-    allAttributes.append(["low_level_" + name for name in LOW_LEVEL])
-    allAttributes.append([expandStats(name, FULL_STATS, "low_level_") for name in LOW_LEVEL_WITH_FULL_STATS])
-    allAttributes.append(["sfx_" + name for name in SFX])
-    allAttributes.append([expandStats(name, SIMPLE_STATS, "sfx_") for name in SFX_WITH_SIMPLE_STATS])
-    allAttributes.append([expandStats(name, FULL_STATS, "sfx_") for name in SFX_WITH_FULL_STATS])
+    allAttributes.extend(FILE_ATTRIBUTES)
+    allAttributes.extend(["low_level_" + name for name in LOW_LEVEL])
+    allAttributes.extend([expandStats(name, FULL_STATS, "low_level_") for name in LOW_LEVEL_WITH_FULL_STATS])
+    allAttributes.extend(["sfx_" + name for name in SFX])
+    allAttributes.extend([expandStats(name, SIMPLE_STATS, "sfx_") for name in SFX_WITH_SIMPLE_STATS])
+    allAttributes.extend([expandStats(name, FULL_STATS, "sfx_") for name in SFX_WITH_FULL_STATS])
     return allAttributes
  
 def writeHeader(filename):
@@ -100,26 +100,27 @@ def writeHeader(filename):
     f.write("% " + str(datetime.datetime.now()) + "\n")
     f.write("@RELATION sounds\n\n")
     allAttributes = getAllAttributes()
-    #for attrib in allAttributes:
-    	#f.write(createOneAttributeLine(attrib) + "\n")
+    for i in range(len(allAttributes)):
+        for attrib in allAttributes[i]:
+            print(attrib)
+            f.writelines(createOneAttributeLine(attrib))
     f.write("@ATTRIBUTE class {Human-In-Distress, Other}\n\n")
     f.write("@DATA\n")
 
-def createArff(filename):
+def createArff(filename, jsonFiles):
     writeHeader(filename)
-    # f.write("@RELATION sounds\n\n @ATTRIBUTE bitrate\t NUMERIC\n @ATTdeactRIBUTE bitdepth\t NUMERIC\n @ATTRIBUTE duration\t NUMERIC\n NUMERIC\n @ATTRIBUTE class\t {Human-In-Distress, Other}\n @DATA\n")
-
-    # for jF in id_result:
-    # 	f.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
-    # 	analysis = json.loads(curl(jF['analysis_stats']), encoding='iso-8859-1')
-    # 			f.write("{0},{1}".format())
-    # 	if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
-    # 		#write to file under Human-In-Distress
-    # 		f.write("Human-In-Distress\n")
-    # 	else:
-    # 		#write to file under Other
-    # 		f.write("Other\n")
-    # 	f.write("% {0}: {1} {2} %.format(jF["id"], jF["name"], jF["tags"].join(, )))
+    f = open(filename, 'aw')
+    for jF in jsonFiles:
+      f.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
+      analysis = json.loads(curl(jF['analysis_stats']), encoding='iso-8859-1')
+      #f.write("{0},{1}".format())
+      if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
+     		#write to file under Human-In-Distress
+     		f.write("Human-In-Distress\n")
+      else:
+     		#write to file under Other
+     		f.write("Other\n")
+      #f.write("% {0}: {1} {2} %".format(jF["id"], jF["name"], jF["tags"].join(, )))
 
 #Gets .json file of all sounds with same tags
 def main():
@@ -129,10 +130,11 @@ def main():
         url = SEARCH_FOR_TAG_URL.format(tag, userInput['key'])
         json_result = getJsonFromUrl(url)
         allIds.append(getIdsFromTagResult(json_result))
+    allJsonForIds = list()
+    for id in allIds:
+        allJsonForIds = getAllJsonResultsFromIds(id, userInput['key']) 
 
-    allJsonForIds = [getAllJsonResultsFromIds(id, userInput['key']) for id in allIds]
-
-    createArff(OUTPUT_FILE)
+    createArff(OUTPUT_FILE,  allJsonForIds)
 
 if __name__ == "__main__":
     main()
