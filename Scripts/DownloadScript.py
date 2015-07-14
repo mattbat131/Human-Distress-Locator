@@ -128,7 +128,10 @@ def createArff(file, jsonFiles, attributes, key):
         #print(analysis)
         file.write(createOneDataLine(analysis, attributes) + ",")
         file.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
-        if "human" in jF["tags"] and ("distress" in jF["tags"] or "crying" in jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
+        print(jF["tags"])
+        if "human" in jF["tags"] and ("distress" in jF["tags"] or 
+"crying" in 
+jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
             #write to file under Human-In-Distress
             file.write("Human-In-Distress")
         else:
