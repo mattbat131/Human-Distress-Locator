@@ -16,7 +16,8 @@ LOW_LEVEL_WITH_FULL_STATS = ["spectral_complexity", "silence_rate_20dB", "spectr
                             "spectral_energyband_middle_high", "barkbands_spread", "spectral_centroid", "pitch_salience",
                             "silence_rate_60dB", "spectral_entropy", "spectral_rolloff", "spectral_energyband_low", "barkbands_skewness",
                             "pitch_instantaneous_confidence", "spectral_energyband_middle_low", "spectral_strongpeak", "spectral_energy",
-                             "spectral_flatness_db", "zerocrossingrate", "spectral_skewness", "hfc", "spectral_crest"]
+	                             "spectral_flatness_db", 
+"zerocrossingrate", "spectral_skewness", "hfc", "spectral_crest"]
 LOW_LEVEL = ["average_loudness"]
 
 SFX = ["pitch_min_to_total", "tc_to_total", "pitch_max_to_total", "max_to_total", "duration", "pitch_after_max_to_before_max_energy_ratio", "strongdecay"]
@@ -121,19 +122,19 @@ def createOneDataLine(jsonFile, attributes):
     line = ",".join(values)
     return line
 
-def createArff(file, jsonFiles, attributes, key):
+def createArff(file, jsonFiles, attributes, key, wList, bList):
     for jF in jsonFiles:
         url = jF['analysis_stats'] + "?token=" + key
         analysis = json.loads(curl(url), encoding='iso-8859-1')
         #print(analysis)
         file.write(createOneDataLine(analysis, attributes) + ",")
         file.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
-        print(jF["tags"])
-        if "human" in jF["tags"] and ("distress" in jF["tags"] or 
-"crying" in 
-jF["tags"]    or "pain" in jF["tags"] or "screaming" in jF["tags"] or "moaning" in jF["tags"] or "scared" in jF["tags"] or "yelling" in jF["tags"]):
+        #print(jF["tags"])
+        if "human" in jF["tags"] or "female" in jF["tags"] or "male" in jF["tags"] or "women" in jF["tags"] or "man" in jF["tags"] and [[w 
+in jF["tags"]] for w in wList] and not [[b in jF["tags"]] for b in bList]:
             #write to file under Human-In-Distress
             file.write("Human-In-Distress")
+            print("Distress")
         else:
             #write to file under Other
             file.write("Other")
@@ -152,11 +153,19 @@ def main():
     for id in allIds:
         allJsonForIds.extend(getAllJsonResultsFromIds(id, userInput['key']))
 
+    wList = list()
+    with open("Whitelist.txt") as w:
+        wList = w.readlines()
+
+    bList = list()
+    with open("Blacklist.txt") as b:
+        bList = b.readlines()
     f = open(OUTPUT_FILE, 'w')
 
     allAttributes = getAllAttributes()
     writeHeader(f, allAttributes)
-    createArff(f,  allJsonForIds, allAttributes, userInput["key"])
+    createArff(f,  allJsonForIds, allAttributes, userInput["key"], 
+wList, bList)
     f.close()
 
 
