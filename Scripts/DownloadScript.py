@@ -27,23 +27,24 @@ SFX_WITH_FULL_STATS = ["inharmonicity", "oddtoevenharmonicenergyratio"]
 # potentially add: scvalleys
 
 
-def getUserInput():
-    userInput = dict()
-    num = input('How many tags? ')
-    userInput['numberOfTags'] = num
+def getTags():
+    tagFile = dict()
+    f = open("Tags", "r")
+    tagFile['numberOfTags'] = 0
     tags = list()
-    for i in range(int(num)):
-        n = input("Tag: ")
-        tags.append(n)
-    userInput["tags"] = tags
+    for i in f.readlines():
+        tagFile['numberOfTags'] += 1
+        tags.append(i.strip("\n"))
+    print(tags)
+    tagFile["tags"] = tags
     key = ""
     try:
         key_file = open(API_KEY_FILE, 'r')
         key = key_file.readline().strip()
     except:
         key = input('Enter Key: ')
-    userInput["key"] = key
-    return userInput
+    tagFile["key"] = key
+    return tagFile
 
 def curl(url):
     buffer = BytesIO()
@@ -143,15 +144,15 @@ in jF["tags"]] for w in wList] and not [[b in jF["tags"]] for b in bList]:
 
 #Gets .json file of all sounds with same tags
 def main():
-    userInput = getUserInput()
+    tagFile = getTags()
     allIds = list()
-    for tag in userInput["tags"]:
-        url = SEARCH_FOR_TAG_URL.format(tag, userInput['key'])
+    for tag in tagFile["tags"]:
+        url = SEARCH_FOR_TAG_URL.format(tag, tagFile['key'])
         json_result = getJsonFromUrl(url)
         allIds.append(getIdsFromTagResult(json_result))
     allJsonForIds = list()
     for id in allIds:
-        allJsonForIds.extend(getAllJsonResultsFromIds(id, userInput['key']))
+        allJsonForIds.extend(getAllJsonResultsFromIds(id, tagFile['key']))
 
     wList = list()
     with open("Whitelist.txt") as w:
@@ -164,7 +165,7 @@ def main():
 
     allAttributes = getAllAttributes()
     writeHeader(f, allAttributes)
-    createArff(f,  allJsonForIds, allAttributes, userInput["key"], 
+    createArff(f,  allJsonForIds, allAttributes, tagFile["key"], 
 wList, bList)
     f.close()
 

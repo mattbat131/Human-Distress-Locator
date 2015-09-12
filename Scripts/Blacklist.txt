@@ -12,3 +12,7 @@ pet
 funny
 joke
 fake
+dogs
+cats
+laughing
+animals
