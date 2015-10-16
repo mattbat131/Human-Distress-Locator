@@ -15,7 +15,7 @@ def GetTheClassificationFromKnn(tPoints, p, k=1):
         if distance < collection.max():
             maxIndex = collection.replaceMax(tP, p, maxIndex)
 
-     outputClass = collection.modeOfClass()
+     #outputClass = collection.modeOfClass()
      outputClass = collection.weightedAverageOfClass()
 
      return outputClass
@@ -46,8 +46,9 @@ class NearestN:
     def getDistance(tP, p):
         distance = 0
         for i in range(len(tP)-1):
-            if data["data"][i] != "?" or p["data"][i] != "?":
-                distance += np.pow(data["data"][i] + p["data"][i], 2)
+            for j in range(len(tP[1])-2):
+                if tP[i][j] != "?" or p[i][j] != "?":
+                    distance += np.pow(data[i][j] + p[i][j], 2)
         distance = np.sqrt(distance)
         return distance
 
@@ -67,3 +68,13 @@ class NearestN:
     def replaceMax(tP, p, index):
         data[index] = tP
         return setMax(p)
+
+    def weightedAverageOfClass():
+        humans = 0
+        others = 0
+        for tP in data:
+            if tP[len(tP)-1] == "Humans-In-Distress":
+                humans += 1
+            elif tp[len(tP)-1] == "Other":
+                others += 1
+        return humans > others
