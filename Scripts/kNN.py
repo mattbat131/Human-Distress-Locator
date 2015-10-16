@@ -1,0 +1,73 @@
+import arff
+import numpy as np
+import codecs
+
+def GetTheClassificationFromKnn(tPoints, p, k=1):
+     collection = NearestN(k)
+
+     collection.setCollection([tPoints['data'][i] for i in range(k)])
+
+     maxIndex = collection.setMax(p)
+
+     for tP in tPoints:
+        distance = collection.GetDistance(tP, p)
+
+        if distance < collection.max():
+            maxIndex = collection.replaceMax(tP, p, maxIndex)
+
+     outputClass = collection.modeOfClass()
+     outputClass = collection.weightedAverageOfClass()
+
+     return outputClass
+
+def createData(file):
+     dataset = arff.load(file)
+     data = np.array(dataset['data'])
+     return data
+
+def main():
+     file = codecs.open("HumanDistress_Normalize.arff", 'rb', 'utf-8')
+     tPoints = createData(file)
+
+     #pFile = codecs.open("Point.arff", 'rb', 'utf-8')
+     #point = createData(pFile)
+
+     print(tPoints)
+     #print(GetTheClassificationFromKnn(tPoints, p, 1))
+
+if __name__ == "__main__":
+     main()
+
+
+class NearestN:
+    max = 0
+    maxIndex = 0
+    data = list()
+
+    def __init__(self, k):
+        self.k = k
+
+    def getDistance(tP, p):
+        distance = 0
+        for i in range(len(tP)-1):
+            if data["data"][i] != "?" or p["data"][i] != "?":
+                distance += np.pow(data["data"][i] + p["data"][i], 2)
+        distance = np.sqrt(distance)
+        return distance
+
+    def setCollection(tP):
+        data = tP
+
+    def setMax(p):
+        i = 0
+        for tP in data:
+            pMax = getDistance(tP, p)
+            i+=1
+            if pMax > max:
+                max = pMax
+                maxIndex = i
+        return i
+
+    def replaceMax(tP, p, index):
+        data[index] = tP
+        return setMax(p)
