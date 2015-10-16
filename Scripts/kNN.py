@@ -48,7 +48,7 @@ class NearestN:
         for i in range(len(tP)-1):
             for j in range(len(tP[1])-2):
                 if tP[i][j] != "?" or p[i][j] != "?":
-                    distance += np.pow(data[i][j] + p[i][j], 2)
+                    distance += np.power(data[i][j] + p[i][j], 2)
         distance = np.sqrt(distance)
         return distance
 
