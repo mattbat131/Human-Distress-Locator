@@ -3,7 +3,7 @@ import numpy as np
 import codecs
 
 def GetTheClassificationFromKnn(tPoints, p, k=1):
-     collection = NearestN(k)
+     collection = NearestN()
 
      collection.setCollection([tPoints['data'][i] for i in range(k)])
 
@@ -29,11 +29,10 @@ def main():
      file = codecs.open("HumanDistress_Normalize.arff", 'rb', 'utf-8')
      tPoints = createData(file)
 
-     #pFile = codecs.open("Point.arff", 'rb', 'utf-8')
-     #point = createData(pFile)
+     pFile = codecs.open("Point.arff", 'rb', 'utf-8')
+     point = createData(pFile)
 
-     print(tPoints)
-     #print(GetTheClassificationFromKnn(tPoints, p, 1))
+     print(GetTheClassificationFromKnn(tPoints, p, 1))
 
 if __name__ == "__main__":
      main()
@@ -43,9 +42,6 @@ class NearestN:
     max = 0
     maxIndex = 0
     data = list()
-
-    def __init__(self, k):
-        self.k = k
 
     def getDistance(tP, p):
         distance = 0
