@@ -9,7 +9,7 @@ def GetTheClassificationFromKnn(tPoints, p, k=1):
 
      maxIndex = collection.setMax(p)
 
-     for tP in tPoints:
+     for tP in tPoints['data']:
         distance = collection.GetDistance(tP, p)
 
         if distance < collection.max():
