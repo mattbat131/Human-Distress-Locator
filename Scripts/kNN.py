@@ -5,11 +5,11 @@ import codecs
 def GetTheClassificationFromKnn(tPoints, p, k=1):
      collection = NearestN()
 
-     collection.setCollection([tPoints['data'][i] for i in range(k)])
+     collection.setCollection([tPoints[i] for i in range(k)])
 
      maxIndex = collection.setMax(p)
 
-     for tP in tPoints['data']:
+     for tP in tPoints:
         distance = collection.GetDistance(tP, p)
 
         if distance < collection.max():
@@ -25,6 +25,17 @@ def createData(file):
      data = np.array(dataset['data'])
      return data
 
+def crossFold(tP, crossFolds=1):
+     crossLength = len(tP)/float(crossFolds)
+     crossArray = []
+     last = 0.0
+
+     while last < len(tP):
+         crossArray.append(tP[int(last):int(last+avg)])
+         last += avg
+
+     return crossArray
+
 def main():
      file = codecs.open("HumanDistress_Normalize.arff", 'rb', 'utf-8')
      tPoints = createData(file)
@@ -32,7 +43,16 @@ def main():
      pFile = codecs.open("Point.arff", 'rb', 'utf-8')
      point = createData(pFile)
 
-     print(GetTheClassificationFromKnn(tPoints, p, 1))
+     tPoints_fold = crossFold(tP, 10)
+
+     human = 0
+     other = 0
+     for pts in tPoints_fold:
+         if GetTheClassificationFromKnn(tps, p, 1):
+             human += 1
+         else:
+             other += 1
+     print(human>other)
 
 if __name__ == "__main__":
      main()
