@@ -65,8 +65,8 @@ class NearestN:
 
     def getDistance(tP, p):
         distance = 0
-        for i in range(len(tP)-1):
-            for j in range(len(tP[1])-2):
+        for i in range(len(tP)):
+            for j in range(len(tP[1])-1):
                 if tP[i][j] != "?" or p[i][j] != "?":
                     distance += np.power(data[i][j] + p[i][j], 2)
         distance = np.sqrt(distance)
