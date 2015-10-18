@@ -12,8 +12,9 @@ class NearestN:
         distance = float(0.0)
         for i in range(len(tP)):
             for j in range(len(tP[i])):
-                 if not (isinstance(tP[i][j], type(None)) and isinstance(p[i][j],type(None)) and isinstance(tP[i][j], string) and isinstance(p[i][j], string)):
-                     distance += (tP[i][j] + p[i][j]) * (tp[i][j] + p[i][j])
+                 if not (isinstance(tP[i], type(None)) and isinstance(p[i],type(None)) and isinstance(tP[i], string) and isinstance(p[i], string)):
+                     print(tP[i][j])
+                     distance += np.power((tP[i][j] + p[i]),2)
         distance = np.sqrt(distance)
         return distance
 
