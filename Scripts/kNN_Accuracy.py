@@ -7,14 +7,14 @@ class NearestN:
         self.data = tP
         self.max = 0
         self.maxIndex = 0
+        #print(self.data)
 
     def getDistance(self, tP, p):
         distance = float(0.0)
         for i in range(len(tP)):
-            for j in range(len(tP[i])):
-                 if not (isinstance(tP[i], type(None)) and isinstance(p[i],type(None)) and isinstance(tP[i], string) and isinstance(p[i], string)):
-                     print(tP[i][j])
-                     distance += np.power((tP[i][j] + p[i]),2)
+             #if not (tP[i][j]=="None" or p[i]=="None" or isinstance(tP[i], type(None)) or isinstance(p[i],type(None)) or isinstance(tP[i], str) or isinstance(p[i], str)):
+             if isinstance(tP[i], float) and isinstance(p[i], float):
+                 distance += np.power((tP[i] + p[i]),2)
         distance = np.sqrt(distance)
         return distance
 
@@ -49,18 +49,18 @@ class NearestN:
     def modeOfClass(self):
         humans = 0
         others = 0
-        if isinstance(self.data[0], list):
+        if len(self.data[0]) != 1:
              for tP in self.data:
                  if tP[len(tP)-1] == "Human-In-Distress":
                      humans += 1
-                 elif tp[len(tP)-1] == "Other":
+                 elif tP[len(tP)-1] == "Other":
                      others += 1
         else:
-             print(self.data[len(self.data)-1])
-             if self.data[len(self.data)-1] == "Human-In-Distress":
+             if self.data[0][len(self.data)-1] == "Human-In-Distress":
                  humas += 1
              else:
                  others += 1
+        print(humans , " " , others)
         return humans > others
 
 def GetTheClassificationFromKnn(tPoints, p, k=1):
@@ -110,14 +110,18 @@ def main():
 
      tPoints_decision = decisionTree(tPoints)
      tPoints_fold = crossFold(tPoints_decision, 10)
+     #print(tPoints_fold)
 
      for i in range(len(tPoints_fold)):
          for tP in tPoints_fold[i]:
+             print(tP[:i:])
+             return 0
+             print(tPoints_fold[np.arange(len(tPoints_fold)!=i)])
              if GetTheClassificationFromKnn(tPoints_fold[np.arange(len(tPoints_fold)!=i)], tP, 10):
-                 print (tP[len(tP)-1])
+                # print (tP[len(tP)-1])
                  print ("Got Human")
              else:
-                 print (tP[len(tP)-1])
+                # print (tP[len(tP)-1])
                  print ("Got Other")
 
 if __name__ == "__main__":
