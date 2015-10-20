@@ -11,6 +11,7 @@ class NearestN:
 
     def getDistance(self, tP, p):
         distance = float(0.0)
+        #print(tP)
         for i in range(len(tP)):
              #if not (tP[i][j]=="None" or p[i]=="None" or isinstance(tP[i], type(None)) or isinstance(p[i],type(None)) or isinstance(tP[i], str) or isinstance(p[i], str)):
              if isinstance(tP[i], float) and isinstance(p[i], float):
@@ -25,23 +26,25 @@ class NearestN:
         return self.max
 
     def setMax(self, p):
-        i = 0
-        if isinstance(self.data[0], list):
-             for tP in self.data:
-                 pMax = self.getDistance(tP, p)
-                 i+=1
-                 if pMax > self.max:
-                     self.max = pMax
-                     self.maxIndex = i
+        k = 0
+        if isinstance(self.data[0], np.ndarray):
+             for i in range(len(self.data)):
+                # print(self.data[i])
+                 for tP in self.data[i]:
+                     pMax = self.getDistance(tP, p)
+                     k+=1
+                     if pMax > self.max:
+                         self.max = pMax
+                         self.maxIndex = i
         else:
              pMax = self.getDistance(self.data, p)
              if pMax > self.max:
                  self.max = pMax
-        return i
+        return k
 
     def replaceMax(self, tP, p, index):
-        if isinstance(self.data[0], list):
-            self.data[index] = tP
+        if isinstance(self.data[0], np.ndarray):
+           self.data[index] = tP
         else:
             self.data = tP
         return self.setMax(p)
@@ -49,12 +52,15 @@ class NearestN:
     def modeOfClass(self):
         humans = 0
         others = 0
+        self.data = np.array(self.data, dtype='object')
         if len(self.data[0]) != 1:
-             for tP in self.data:
-                 if tP[len(tP)-1] == "Human-In-Distress":
-                     humans += 1
-                 elif tP[len(tP)-1] == "Other":
-                     others += 1
+             for tP_folds in self.data:
+                 for tP in tP_folds:
+                     #print(tP)
+                     if tP[len(tP)-1] == "Human-In-Distress":
+                         humans += 1
+                     elif tP[len(tP)-1] == "Other":
+                         others += 1
         else:
              if self.data[0][len(self.data)-1] == "Human-In-Distress":
                  humas += 1
@@ -75,7 +81,6 @@ def GetTheClassificationFromKnn(tPoints, p, k=1):
 
      for tP in tPoints:
         distance = collection.getDistance(tP, p)
-
         if distance < collection.getMax():
             maxIndex = collection.replaceMax(tP, p, maxIndex)
 
@@ -114,10 +119,8 @@ def main():
 
      for i in range(len(tPoints_fold)):
          for tP in tPoints_fold[i]:
-             print(tP[:i:])
-             return 0
-             print(tPoints_fold[np.arange(len(tPoints_fold)!=i)])
-             if GetTheClassificationFromKnn(tPoints_fold[np.arange(len(tPoints_fold)!=i)], tP, 10):
+            # print(tPoints_fold[:i] + tPoints_fold[i:])
+             if GetTheClassificationFromKnn(tPoints_fold[:i]+tPoints_fold[i:], tP, 10):
                 # print (tP[len(tP)-1])
                  print ("Got Human")
              else:
