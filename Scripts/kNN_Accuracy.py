@@ -29,7 +29,7 @@ class NearestN:
     def setMax(self, p):
         if isinstance(self.data[0], np.ndarray):
             for i in range(len(self.data)):
-                 print(self.max)
+                 #print(self.max)
                  pMax = self.getDistance(self.data[i], p)
                  if pMax > self.max:
                      self.max = pMax
@@ -81,9 +81,9 @@ def GetTheClassificationFromKnn(tPoints, p, k=1):
 
      for i in range(len(tPoints)):
          for j in range(len(tPoints[0])):
-             if (j>=k):
+             if j>=k and i==0:
                  distance = collection.getDistance(tPoints[i][j], p)
-                 #print(tP)
+                 #print(tPoints[i][j])
                  if distance < collection.getMax():
                      collection.replaceMax(tPoints[i][j], p)
 
