@@ -62,7 +62,7 @@ class NearestN:
                      others += 1
         else:
              if self.data[0][len(self.data)-1] == "Human-In-Distress":
-                 humas += 1
+                 humans += 1
              else:
                  others += 1
         print(humans , " " , others)
