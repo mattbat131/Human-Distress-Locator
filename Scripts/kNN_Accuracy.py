@@ -46,6 +46,7 @@ class NearestN:
          else:
              #print(tP)
              self.data = tP
+         self.setMax(p)
          #print(self.data[index] , "After")
 
     def modeOfClass(self):
@@ -76,7 +77,7 @@ def GetTheClassificationFromKnn(tPoints, p, k=1):
 
      collection = NearestN(initialData)
 
-     maxIndex = collection.setMax(p)
+     collection.setMax(p)
 
      for i in range(len(tPoints)):
          for j in range(len(tPoints[0])):
