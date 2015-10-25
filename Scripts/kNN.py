@@ -25,6 +25,7 @@ def createData(file):
      data = np.array(dataset['data'])
      return data
 
+#randomize cross folds
 def crossFold(tP, crossFolds=1):
      crossLength = len(tP)/float(crossFolds)
      crossArray = []
@@ -36,6 +37,9 @@ def crossFold(tP, crossFolds=1):
 
      return crossArray
 
+def decisionTree(tP):
+    return tP
+
 def main():
      file = codecs.open("HumanDistress_Normalize.arff", 'rb', 'utf-8')
      tPoints = createData(file)
@@ -43,7 +47,8 @@ def main():
      pFile = codecs.open("Point.arff", 'rb', 'utf-8')
      point = createData(pFile)
 
-     tPoints_fold = crossFold(tP, 10)
+     tPoints_decision = decisionTree(tPoints)
+     tPoints_fold = crossFold(tPoints_decision, 10)
 
      human = 0
      other = 0

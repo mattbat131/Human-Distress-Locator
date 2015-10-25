@@ -1,6 +1,6 @@
 import heapq
 from math import sqrt
-from statistics import mode
+from statistics import mode, StatisticsError
 
 class neighbor_item:
     def __init__(self, data, distance):
@@ -35,4 +35,8 @@ def k_nearest_neighbor(query, data_set, k,
         heapq.heappush(all_neighbors_heap, new_neighbor)
     top_neighbors = [heapq.heappop(all_neighbors_heap) for i in range(k)]
     classes = [get_class_function(neighbor) for neighbor in top_neighbors]
-    return compute_winning_class_function(classes)
+
+    try:
+        return compute_winning_class_function(classes)
+    except StatisticsError:
+        return "Human-In-Distress"

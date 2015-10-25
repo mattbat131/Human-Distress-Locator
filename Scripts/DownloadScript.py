@@ -2,6 +2,7 @@ import datetime
 from io import BytesIO
 import json
 import pycurl
+import time
 
 
 API_KEY_FILE = "ApiKey.txt"
@@ -126,7 +127,11 @@ def createOneDataLine(jsonFile, attributes):
 def createArff(file, jsonFiles, attributes, key, wList, bList):
     for jF in jsonFiles:
         url = jF['analysis_stats'] + "?token=" + key
-        analysis = json.loads(curl(url), encoding='iso-8859-1')
+        try:
+            analysis = json.loads(curl(url), encoding='iso-8859-1')
+        except:
+            time.sleep(1)
+            analysis = json.loads(curl(url), encoding='iso-8859-1')
         #print(analysis)
         file.write(createOneDataLine(analysis, attributes) + ",")
         file.write("{0},{1},{2},".format(jF['bitrate'], jF['bitdepth'], jF['duration']))
