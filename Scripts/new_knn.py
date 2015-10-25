@@ -47,10 +47,7 @@ def average_filtered_mode(top_neighbors, get_class_function):
 
 # Assumes class labels are consistent and binary!!!!!!
 def weighted_average_class(top_neighbors, get_class_function):
-    try:
-        weights = [1.0/n.distance for n in top_neighbors]
-    except ZeroDivisionError:
-        pass
+    weights = [1.0/n.distance for n in top_neighbors if n.distance != 0]
     weight_sum = sum(weights)
     a_class, b_class = find_two_class_labels(top_neighbors, get_class_function)
     if a_class is b_class:
@@ -81,7 +78,7 @@ def mode_based_function(top_neighbors, get_class_function):
 def k_nearest_neighbor(query, folds, k,
                        distance_function=euclidean_distance_function,
                        get_class_function=default_get_class_function,
-                       compute_winning_class_function=weighted_average_class):
+                       compute_winning_class_function=average_filtered_mode):
     all_neighbors_heap = []
     for fold in folds:
         for point in fold:
