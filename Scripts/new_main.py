@@ -7,10 +7,11 @@ from itertools import zip_longest
 
 
 def load_and_shuffle():
-    file = codecs.open("HumanDistress_Normalize.arff", 'rb', 'utf-8')
+    file = codecs.open("HumanDistress_Normalize_cleaned.arff", 'rb', 'utf-8')
     arff_everything = arff.load(file)
     data_set = arff_everything['data']
-    return sorted(data_set, key=lambda k: random.random())
+    random.shuffle(data_set)
+    return data_set
 
 def create_k_folds(data, k_folds):
     items_per_fold = ceil(len(data) / k_folds)
@@ -23,18 +24,49 @@ def create_k_folds(data, k_folds):
 
     return data_fold
 
+
+def is_positive_class(class_result):
+    return 'Human' in class_result
+
+
+def report_accuracy(all_results):
+    print(all_results)
+
+
 def main():
     data = load_and_shuffle()
     k_folds = 10
     folds = create_k_folds(data, k_folds)
+    all_results = dict()
+    all_results['true_pos'] = 0
+    all_results['false_pos'] = 0
+    all_results['true_neg'] = 0
+    all_results['false_neg'] = 0
     for i in range(len(folds)):
         fold_under_test = folds[i]
         folds_in_database = folds[:i] + folds[i+1:]
-        result = list()
-        for point in folds[i]:
-            result.append(new_knn.k_nearest_neighbor(folds_in_database, folds[i], 10))
-        print(result)
-    # you figure out the rest, i'm going to bed
+        for point in fold_under_test:
+            result = new_knn.k_nearest_neighbor(point, folds_in_database, 9)
+            print(result, point[-1])
+            if is_positive_class(result):
+                if is_positive_class(point[-1]):
+                    all_results['true_pos'] += 1
+                    print('true_pos')
+                else:
+                    all_results['false_pos'] += 1
+                    print('false_pos')
+            else:
+                if is_positive_class(point[-1]):
+                    all_results['false_neg'] += 1
+                    print('false_neg')
+                else:
+                    all_results['true_neg'] += 1
+                    print('true_neg')
+            # all_results["result"].append(result)
+            # all_results["actual"].append(point[-1])
+    report_accuracy(all_results)
+
+
 
 if __name__ == "__main__":
     main()

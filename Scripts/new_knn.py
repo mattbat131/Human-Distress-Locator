@@ -1,6 +1,6 @@
 import heapq
 from math import sqrt
-from statistics import mode, StatisticsError
+from statistics import mode, mean, StatisticsError
 
 class neighbor_item:
     def __init__(self, data, distance):
@@ -15,6 +15,16 @@ def default_get_class_function(neighbor):
     return neighbor.data[-1]
 
 
+def find_two_class_labels(neighbors, get_class_function):
+    a_class = get_class_function(neighbors[0])
+    b_class = a_class
+    for neighbor in neighbors:
+        if get_class_function(neighbor) is not a_class:
+            b_class = get_class_function(neighbor)
+            break
+    return a_class, b_class
+
+
 def euclidean_distance_function(one, two):
     all_dimensions = zip(one, two)
     squared_distance = 0
@@ -24,19 +34,59 @@ def euclidean_distance_function(one, two):
     return sqrt(squared_distance)
 
 
-def k_nearest_neighbor(query, data_set, k,
-                       distance_function=euclidean_distance_function,
-                       get_class_function=default_get_class_function,
-                       compute_winning_class_function=mode):
-    all_neighbors_heap = []
-    for point in data_set:
-        distance = distance_function(query, point)
-        new_neighbor = neighbor_item(point, distance)
-        heapq.heappush(all_neighbors_heap, new_neighbor)
-    top_neighbors = [heapq.heappop(all_neighbors_heap) for i in range(k)]
-    classes = [get_class_function(neighbor) for neighbor in top_neighbors]
+def average_filtered_mode(top_neighbors, get_class_function):
+    sum = 0
+    for neighbor in top_neighbors:
+        sum += neighbor.distance
+    avg = sum/len(top_neighbors)
 
+    avg_top_neighbors = [neighbor for neighbor in top_neighbors if neighbor.distance <= avg]
+
+    return mode_based_function(avg_top_neighbors, get_class_function)
+
+
+# Assumes class labels are consistent and binary!!!!!!
+def weighted_average_class(top_neighbors, get_class_function):
     try:
-        return compute_winning_class_function(classes)
+        weights = [1.0/n.distance for n in top_neighbors]
+    except ZeroDivisionError:
+        pass
+    weight_sum = sum(weights)
+    a_class, b_class = find_two_class_labels(top_neighbors, get_class_function)
+    if a_class is b_class:
+        return a_class
+    a_class_total = 0
+    for i in range(len(top_neighbors)):
+        if get_class_function(top_neighbors[i]) is a_class:
+            a_class_total += weights[i]
+    if a_class_total / weight_sum > 0.5:
+        return a_class
+    else:
+        return b_class
+
+
+def mode_based_function(top_neighbors, get_class_function):
+    classes = [get_class_function(neighbor) for neighbor in top_neighbors]
+    try:
+        return mode(classes)
     except StatisticsError:
         return "Human-In-Distress"
+
+
+# def weighted_avg(top_neighbors, get_class_function=default_get_class_function):
+#     for i in len()
+#     mean(top_neighbors)
+
+
+def k_nearest_neighbor(query, folds, k,
+                       distance_function=euclidean_distance_function,
+                       get_class_function=default_get_class_function,
+                       compute_winning_class_function=weighted_average_class):
+    all_neighbors_heap = []
+    for fold in folds:
+        for point in fold:
+            distance = distance_function(query, point)
+            new_neighbor = neighbor_item(point, distance)
+            heapq.heappush(all_neighbors_heap, new_neighbor)
+    top_neighbors = [heapq.heappop(all_neighbors_heap) for i in range(k)]
+    return compute_winning_class_function(top_neighbors, get_class_function)
