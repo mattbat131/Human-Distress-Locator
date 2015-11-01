@@ -1,0 +1,6 @@
+evaluator: InfoGainAttributeEval
+search: Ranker (default settings) 
+  generateRanking True
+  numToSelect -1
+  startSet (empty)
+  threshold 0.001
