@@ -62,6 +62,38 @@ def weighted_average_class(top_neighbors, get_class_function):
         return b_class
 
 
+def weighted_euclidian_distance_mean_class(top_neighbors, get_class_function):
+    weights = [n.distance**2 for n in top_neighbors]
+    weight_sum_sqrt = sqrt(sum(weights))
+    a_class, b_class = find_two_class_labels(top_neighbors, get_class_function)
+    if a_class is b_class:
+        return a_class
+    a_class_total = 0
+    for i in range(len(top_neighbors)):
+        if get_class_function(top_neighbors[i]) is a_class:
+            a_class_total += weights[i]
+    if a_class_total / weight_sum_sqrt > .5:
+        return a_class
+    else:
+        return b_class
+
+
+def weighted_sqr_mean_class(top_neighbors, get_class_function):
+    weights = [sqrt(n.distance) for n in top_neighbors]
+    weight_sum = sum(weights)
+    a_class, b_class = find_two_class_labels(top_neighbors, get_class_function)
+    if a_class is b_class:
+        return a_class
+    a_class_total = 0
+    for i in range(len(top_neighbors)):
+        if get_class_function(top_neighbors[i]) is a_class:
+            a_class_total += weights[i]
+    if a_class_total / weight_sum > .5:
+        return a_class
+    else:
+        return b_class
+
+
 def mode_based_function(top_neighbors, get_class_function):
     classes = [get_class_function(neighbor) for neighbor in top_neighbors]
     try:
@@ -78,7 +110,7 @@ def mode_based_function(top_neighbors, get_class_function):
 def k_nearest_neighbor(query, folds, k,
                        distance_function=euclidean_distance_function,
                        get_class_function=default_get_class_function,
-                       compute_winning_class_function=average_filtered_mode):
+                       compute_winning_class_function=weighted_sqr_mean_class):
     all_neighbors_heap = []
     for fold in folds:
         for point in fold:
